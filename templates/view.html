@@ -1,0 +1,14 @@
+{%extends "parent.html"%}
+
+{%block content%} users-list {%endblock%}
+
+{%block data%}
+    <table>
+        {%for user in values%}
+            <tr>
+                <td>{{user[0]}}</td>
+                <td>{{user[1]}}</td>
+            </tr>
+        {%endfor%}
+    </table>
+{%endblock%}

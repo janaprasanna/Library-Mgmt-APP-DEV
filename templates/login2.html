@@ -1,0 +1,22 @@
+{%extends "parent.html"%}
+{%block title%}
+    Login Page
+{%endblock%}
+
+{%block data%}
+  {%with messages = get_flashed_messages()%}
+    {%if messages%}
+      {%for msg in messages%}
+        <p>{{msg}}</p>
+      {%endfor%}
+    {%endif%}
+  {%endwith%}
+  <form action="#" method="POST">
+    <p>Username:</p>
+    <p style="font-size:13px;">NOTE: Your signup email is the username</p>
+    <p><input type="text" name="l_mail"></p>
+    <p>Password:</p>
+    <input type="password" id="pwd" name="l_passwd" minlength="4" maxlength="10"><br><br>
+    <p><input type="submit" value="Login"></p>
+  </form>
+{%endblock%}
