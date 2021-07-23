@@ -1,0 +1,27 @@
+{%extends "parent.html"%}
+{%block title%}
+  Sign up Page
+{%endblock%}
+
+{%block data%}
+  {%with messages = get_flashed_messages()%}
+    {%if messages%}
+      {%for msg in messages%}
+        <p>{{msg}}</p>
+      {%endfor%}
+    {%endif%}
+  {%endwith%}
+  <form action="#" method="POST">
+    <p>Name:</p>
+    <p><input type="text" name="name"></p>
+    <p>Password:</p>
+    <input type="password" id="pwd" name="passwd" minlength="4" maxlength="10s">
+     <p>Confirm Password:</p>
+    <input type="password" id="c_pwd" name="c_passwd" minlength="4" maxlength="10"> <br><br>
+    <p>Email:</p>
+    <p> <input type="email" name="email" placeholder="Type your email" value="{{email if email}}"></p>
+    <p style="font-size:13px;">Dont worry! we wont share your info to anyone! feel safe to enter :)</p>
+    <p><input type="submit" value="Sign up"></p>
+  </form>
+{%endblock%}
+<!-- method = "post" will post the input i;e name data back to python where it recieves to the user variable -->

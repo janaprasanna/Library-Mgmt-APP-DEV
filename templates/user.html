@@ -1,0 +1,17 @@
+{%extends "parent.html"%}
+{%block content%} User-{{user}} {%endblock%}
+
+
+{%block data%}
+    {%with messages = get_flashed_messages()%}
+        {%if messages%}
+            {%for msg in messages%}
+                <p>{{msg}}</p>
+            {%endfor%}
+        {%endif%}
+    {%endwith%}
+    <!-- the variable 'email' that is passed is to this template being checked if it has a value.
+        if it does have one, it gets stored inside value.-->
+
+{%endblock%}
+
