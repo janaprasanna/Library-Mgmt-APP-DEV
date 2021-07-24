@@ -1,6 +1,7 @@
 from flask import Flask, render_template, url_for, redirect, request, session, flash
 from flask_mysqldb import MySQL
 from sensitiveinfo import *
+from random import randint, random, randrange
 ''' tutorial on sql alchemy - adding,deleting and updating users'''
 
 
@@ -68,9 +69,25 @@ def chklogin(email,passwd):
 def home():
     return render_template('child.html')
 
+@app.route('/admin',methods=["GET","POST"])
+def admin_login():
+    if request.method == "POST":
+        a_id = admin()
+        a_name = request.form["a_name"]
+        a_email = request.form["a_email"]
+        a_password = request.form["a_password"]
+        cursor = mysql.connection.cursor()
+        cursor.execute("INSERT INTO admin(admin_name,admin_password, admin_email) VALUES(%s,%s,%s)",(a_name,a_password,a_email))
+        mysql.connection.commit()
+    return render_template('admin.html')
 
-
-
+def admin():
+    admin_id = randint(100000, 900000)
+    cursor = mysql.connection.cursor()
+    cursor.execute("INSERT INTO admin(admin_id) VALUES(%d)",(admin_id))
+    mysql.connection.commit()
+    cursor.close()
+    return admin_id
 
 @app.route('/signup',methods=["POST","GET"])
 def signup():
