@@ -36,6 +36,19 @@ def viewdb():
     return render_template('view.html',values=userdetails)
 
 
+@app.route('/adminview/<username>')
+def viewadmin(username):
+    cursor = mysql.connection.cursor()
+    result = cursor.execute("select * from admin where admin_name=%s",({username}))
+    if result:
+        return render_template('adminview.html',object=result)
+    else:
+        flash("No such Admin found !!")
+
+
+
+
+
 def chkusers(email):
     cursor = mysql.connection.cursor()
    # result = cursor.execute(f"SELECT email FROM users WHERE email='{email}'")
@@ -47,15 +60,28 @@ def chkusers(email):
     else:
         return False
 
+
+
 def chkpasswd(p1,p2):
     if p1==p2:
         return True;
     else:
         return False;
 
+
+
 def chklogin(email,passwd):
     cursor = mysql.connection.cursor()
     cursor.execute("select name,email,password from users where email=%s and password=%s",(email,passwd))
+    result = cursor.fetchone()
+    if result:
+        return True
+    else:
+        return False
+
+def chkadminlogin(id,passwd):
+    cursor = mysql.connection.cursor()
+    cursor.execute("select admin_id,admin_password from admin where id=%s and password=%s",(int(id),passwd))
     result = cursor.fetchone()
     if result:
         return True
@@ -69,24 +95,45 @@ def chklogin(email,passwd):
 def home():
     return render_template('child.html')
 
-@app.route('/admin',methods=["GET","POST"])
-def admin_login():
+
+
+@app.route('/adminsignup',methods=["GET","POST"])
+def admin_signup():
     if request.method == "POST":
-        a_id = admin()
+        a_id = adminid()
         a_name = request.form["a_name"]
         a_email = request.form["a_email"]
         a_password = request.form["a_password"]
+        a_c_password = request.form["a_c_password"]
         cursor = mysql.connection.cursor()
-        cursor.execute("INSERT INTO admin(admin_name,admin_password, admin_email) VALUES(%s,%s,%s)",(a_name,a_password,a_email))
-        mysql.connection.commit()
+        if chkpasswd(a_password,a_c_password):
+            cursor.execute("INSERT INTO admin(admin_id,admin_name,admin_email, admin_password) VALUES(%s,%s,%s, %s)",(int(a_id),a_name,a_email,a_password))
+            mysql.connection.commit()
+            cursor.close()
+            return redirect(url_for('admin_login'))
+        else:
+            flash("Mismatching details ! Re-enter correctly !")
+            return redirect(url_for('admin_signup'))
+    return render_template('admin_signup.html')
+
+@app.route('/admin',methods=["GET","POST"])
+def admin_login():
+    if request.method == "POST":
+        a_id = request.form["a_id"]
+        a_password = request.form["a_password"]
+        if chklogin(a_id, a_password):
+            session["admin_id"] = a_id
+            session["admin_password"] = a_password
+            flash(" Welcome Admin !")
+            return redirect(url_for("user"))
+        else:
+            flash("You are not a Admin for this software !! please sign up as a Admin first!")
+            return redirect(url_for("admin_signup"))
     return render_template('admin.html')
 
-def admin():
-    admin_id = randint(100000, 900000)
-    cursor = mysql.connection.cursor()
-    cursor.execute("INSERT INTO admin(admin_id) VALUES(%d)",(admin_id))
-    mysql.connection.commit()
-    cursor.close()
+
+def adminid():
+    admin_id = randint(100000, 990000)
     return admin_id
 
 @app.route('/signup',methods=["POST","GET"])
