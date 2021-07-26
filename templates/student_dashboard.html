@@ -1,0 +1,27 @@
+{%extends "parent.html"%}
+
+{%block head%}
+  <style>
+    table, th, td {
+      border: 1px solid black;
+    }
+  </style>
+{%endblock%}
+{%block content%} Your Dashboard {%endblock%}
+
+{%block data%}
+    <table>
+      <tr>
+        <th>Book ID</th>
+        <th>Book Name</th>
+        <th>No. of Books Borrowed</th>
+        <th>Return Date</th>
+      </tr>
+      <tr>
+        <td>100</td>
+        <td>Tin Tin</td>
+          <td>4</td>
+          <td>2nd August 2022</td>
+      </tr>
+    </table>
+{%endblock%}

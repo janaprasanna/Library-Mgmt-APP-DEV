@@ -1,9 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>Admin Sign-up page</title>
-</head>
-<body>
+{%extends "parent.html"%}
+
+{%block content%} Admin Sign-up {%enblock%}
+
+{%block data%}
+         {%with messages = get_flashed_messages()%}
+            {%if messages%}
+              {%for msg in messages%}
+                <p>{{msg}}</p>
+              {%endfor%}
+            {%endif%}
+        {%endwith%}
       <form action="#" method="POST">
         <p>Admin Name:</p>
         <input type="text" name="a_name"  required>
@@ -16,5 +22,4 @@
       <input type="password" name="a_c_password"  minlength="4" maxlength="10s" required>
       <input type="submit" value="Sign up">
   </form>
-</body>
-</html>
+{%endblock%}

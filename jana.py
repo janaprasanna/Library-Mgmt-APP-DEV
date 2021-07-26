@@ -89,6 +89,23 @@ def chkadminlogin(id,passwd):
         return False
 
 
+def tokenstatus():
+    maxtokens = 5
+    temp_token = 1
+    token_left = 0
+    if token_left <= 5:
+        token_left = maxtokens - temp_token
+        temp_token = temp_token + 1
+
+
+    if token_left <= 5:
+        return True
+    else:
+        return False
+
+
+
+
 
 @app.route('/home')
 @app.route('/')
@@ -227,7 +244,9 @@ def rem_ac():
     return render_template('delete_ac.html')
 
 
-
+@app.route('/mydashboard')
+def dashboard():
+    return render_template('student_dashboard.html')
 
 if __name__== "__main__":
     #db.create_all()
