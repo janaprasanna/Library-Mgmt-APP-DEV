@@ -248,6 +248,10 @@ def rem_ac():
 def dashboard():
     return render_template('student_dashboard.html')
 
+@app.route('/issuebooks',methods=["GET","POST"])
+def issue_approval():
+    return render_template('issuebooks.html')
+
 if __name__== "__main__":
     #db.create_all()
     app.run(debug = True)

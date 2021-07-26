@@ -1,0 +1,28 @@
+{%extends "parent.html"%}
+
+{%block content%} Issue Books {%endblock%}
+
+{%block data%}
+    {%with messages = get_flashed_messages()%}
+      {%if messages%}
+        {%for msg in messages%}
+          <p>{{msg}}</p>
+        {%endfor%}
+      {%endif%}
+    {%endwith%}
+  <!-- action = "/studentdashboard" approval should go to student -->
+    <form action="#" method="POST">
+      <p>student ID:</p>
+      <p><input type="number" name="a_student_id" required></p>
+      <p>Book id:</p>
+      <p><input type="number" name="a_book_id" required></p>
+      <p>Book Name:</p>
+      <input type="text"  name="a_book_name">
+       <p>Bookcount:</p>
+      <input type="text" id="c_pwd" name="book_count" required>
+      <p>Token left:</p>
+      <p><input type="number" name="a_token_left" required></p><br><br>
+      <button type="button" class="btn btn-success">Approve</button>
+      <button type="button" class="btn btn-danger">Deny</button>
+    </form>
+{%endblock%}

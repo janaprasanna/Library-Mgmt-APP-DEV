@@ -10,7 +10,10 @@
       {%endfor%}
     {%endif%}
   {%endwith%}
+<!-- action = "/admindashboard" request should go to admin -->
   <form action="#" method="POST">
+    <p>Enter the your student ID:</p>
+    <p><input type="number" name="student_id" required></p>
     <p>Enter the Book id:</p>
     <p><input type="text" name="book_id" required></p>
     <p>Enter the Book Name:</p>
