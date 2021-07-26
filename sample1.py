@@ -31,9 +31,9 @@ app.secret_key = "jana"
 @app.route('/view')
 def viewdb():
     cursor = mysql.connection.cursor()
-    result = cursor.execute("SELECT * FROM users WHERE email='jj@gmail.com'")
+    result = cursor.execute("SELECT * FROM users WHERE email='jana@outlook.com'")
     if result>0:
-        userdetails = cursor.fetchall()
+        userdetails = cursor.fetchone()
     return render_template('view.html',values=userdetails)
 
 
@@ -44,6 +44,7 @@ def chkusers(email):
     cursor.execute("select email from users where email=%s", (email,))
     result = cursor.fetchone()
     print(result)
+    print(result[1])
     cursor.close()
     if result:
         return True
@@ -54,12 +55,6 @@ def chkusers(email):
 
 
 
-
-
-@app.route('/home')
-@app.route('/')
-def home():
-    return render_template('child.html')
 
 
 
@@ -95,11 +90,6 @@ def login():
 
 
 
-@app.route('/user', methods = ["POST", "GET"])
-def user():
-    name = session["user"]
-    flash(f"Hello {name}!")
-    return render_template('user.html')
 
 
 
@@ -114,21 +104,7 @@ def logout():
     return redirect(url_for("login"))
 
 
-@app.route('/delete',methods=["POST","GET"])
-def rem_ac():
-    if request.method == "POST":
-        delusrn = request.form["delname"]
-        delusrm = request.form["delmail"]
-        #users.query.filter_by(name=delusrn,email=delusrm).delete()
-        #db.session.commit()
-        username = session.get("uname")
-        if username:
-            session.pop("uname",None)
-            '''if a session is found with this user (logged in after a long time)
-            , it should delete them as well to avoid flash mssg bug.'''
-        flash("Account deleted successfully !!")
-        return redirect(url_for("login"))
-    return render_template('delete_ac.html')
+
 
 
 

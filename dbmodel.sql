@@ -13,8 +13,8 @@ create table issue_books(student_id integer, bookid integer, issue_date date,\
 create table admin(admin_id integer primary key,admin_name varchar(20),admin_email varchar(20),admin_password varchar(20));
 
 
-create table studentbooks_inventory(BookID integer primary key, BookName varchar(20) primary key,\
+create table studentbooks_inventory(BookID integer primary key, BookName varchar(20),\
 TotalBooksBorrowed integer, ReturnDate date);
 
-create table adminbooks_inventory(BookID integer primary key, BookName varchar(20) primary key,\
+create table adminbooks_inventory(BookID integer primary key, BookName varchar(20) ,\
 TotalBookCount integer, TotalBooksIssued integer, TotalBooksRegistered integer);

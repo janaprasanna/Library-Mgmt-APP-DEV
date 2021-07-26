@@ -253,12 +253,33 @@ def admindashboard():
     return render_template('books_inventory.html')
 
 
-@app.route('/borrowbooks')
+@app.route('/borrowbooks',methods=["GET","POST"])
 def borrow():
     return render_template('borrow_books.html')
 
+
+def admin_book_chk(book_id,book_name):
+    cursor = mysql.connection.cursor()
+    cursor.execute("select BookID,BookName,TotalBookCount from adminbooks_inventory where BookID=%s AND BookName=%s",(book_id,book_name))
+    result = cursor.fetchone()
+    return result[2]
+
+
 @app.route('/addbooks',methods=["GET","POST"])
 def add_books():
+    book_id = request.form["add_book_id"]
+    book_name = request.form["add_book_name"]
+    book_count = request.form["add_book_count"]
+    oldbook_count = admin_book_chk(book_id,book_name)
+    if oldbook_count !=0 :
+        flash("The Book already found in the Library ! upating the current books...")
+        if oldbook_count > book_count:
+            oldbook_count = oldbook_count + ()
+        else:
+            oldbook_count = book_count - oldbook_count
+    else:
+        flash("The Book is not found in the library...adding new books...")
+
     return  render_template('addbooks.html')
 
 
