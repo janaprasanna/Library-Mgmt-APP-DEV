@@ -81,7 +81,7 @@ def chklogin(email,passwd):
 
 def chkadminlogin(id,passwd):
     cursor = mysql.connection.cursor()
-    cursor.execute("select admin_id,admin_password from admin where id=%s and password=%s",(int(id),passwd))
+    cursor.execute("select admin_id,admin_password from admin where admin_id=%s and admin_password=%s",(int(id),passwd))
     result = cursor.fetchone()
     if result:
         return True
@@ -106,14 +106,18 @@ def admin_signup():
         a_password = request.form["a_password"]
         a_c_password = request.form["a_c_password"]
         cursor = mysql.connection.cursor()
-        if chkpasswd(a_password,a_c_password):
-            cursor.execute("INSERT INTO admin(admin_id,admin_name,admin_email, admin_password) VALUES(%s,%s,%s, %s)",(int(a_id),a_name,a_email,a_password))
-            mysql.connection.commit()
-            cursor.close()
+        if chkadminlogin(a_id, a_password):
+            flash("Admin already exists !! Try Login.")
             return redirect(url_for('admin_login'))
         else:
-            flash("Mismatching details ! Re-enter correctly !")
-            return redirect(url_for('admin_signup'))
+            if chkpasswd(a_password,a_c_password):
+                cursor.execute("INSERT INTO admin(admin_id,admin_name,admin_email, admin_password) VALUES(%s,%s,%s, %s)",(int(a_id),a_name,a_email,a_password))
+                mysql.connection.commit()
+                cursor.close()
+                return redirect(url_for('admin_login'))
+            else:
+                flash("Mismatching details ! Re-enter correctly !")
+                return redirect(url_for('admin_signup'))
     return render_template('admin_signup.html')
 
 @app.route('/admin',methods=["GET","POST"])
@@ -121,7 +125,7 @@ def admin_login():
     if request.method == "POST":
         a_id = request.form["a_id"]
         a_password = request.form["a_password"]
-        if chklogin(a_id, a_password):
+        if chkadminlogin(a_id, a_password):
             session["admin_id"] = a_id
             session["admin_password"] = a_password
             flash(" Welcome Admin !")
