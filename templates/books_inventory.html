@@ -1,0 +1,37 @@
+{%extends "parent.html"%}
+
+{%block head%}
+  <style>
+    table, th, td {
+      border: 1px solid black;
+    }
+  </style>
+{%endblock%}
+
+{%block content%} Books Inventory {%endblock%}
+
+{%block data%}
+    {%with messages = get_flashed_messages()%}
+      {%if messages%}
+        {%for msg in messages%}
+          <p>{{msg}}</p>
+        {%endfor%}
+      {%endif%}
+    {%endwith%}
+    <table>
+      <tr>
+        <th>Book ID</th>
+        <th>Book Name</th>
+          <th>No. of Books In Library</th>
+        <th>No. of Books Registered In Library</th>
+        <th>No. of Books Issued</th>
+      </tr>
+      <tr>
+          <td>B1001</td>
+          <td>Tin Tin</td>
+          <td>50</td>
+          <td>10</td>
+          <td>15</td>
+      </tr>
+    </table>
+{%endblock%}

@@ -248,10 +248,27 @@ def rem_ac():
 def dashboard():
     return render_template('student_dashboard.html')
 
+@app.route('/booksdashboard')
+def admindashboard():
+    return render_template('books_inventory.html')
+
+
+@app.route('/borrowbooks')
+def borrow():
+    return render_template('borrow_books.html')
+
+@app.route('/addbooks',methods=["GET","POST"])
+def add_books():
+    return  render_template('addbooks.html')
+
+
+@app.route('/removebooks',methods=["GET","POST"])
+def remove_books():
+    return  render_template('removebooks.html')
+
 @app.route('/issuebooks',methods=["GET","POST"])
 def issue_approval():
     return render_template('issuebooks.html')
 
 if __name__== "__main__":
-    #db.create_all()
     app.run(debug = True)

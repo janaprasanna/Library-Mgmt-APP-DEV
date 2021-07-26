@@ -1,0 +1,22 @@
+{%extends "parent.html"%}
+
+{%block content%} Add Books {%endblock%}
+
+{%block data%}
+  {%with messages = get_flashed_messages()%}
+    {%if messages%}
+      {%for msg in messages%}
+        <p>{{msg}}</p>
+      {%endfor%}
+    {%endif%}
+  {%endwith%}
+  <form action="#" method="POST">
+    <p>Enter the Book id:</p>
+    <p><input type="text" name="add_book_id" required></p>
+    <p>Enter the Book Name:</p>
+    <input type="text"  name="add_book_name" required>
+     <p>Enter the count:</p>
+    <input type="number"  name="add_book_count" required> <br><br>
+    <p><input type="submit" value="Add"></p>
+  </form>
+{%endblock%}
