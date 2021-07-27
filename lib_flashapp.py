@@ -260,7 +260,11 @@ def dashboard():
 
 @app.route('/booksdashboard')
 def admindashboard():
-    return render_template('books_inventory.html')
+    cursor = mysql.connection.cursor()
+    result = cursor.execute("SELECT * FROM adminbooks_inventory")
+    if result > 0:
+        bookdetails = cursor.fetchall()
+    return render_template('books_inventory.html',books=bookdetails)
 
 
 @app.route('/borrowbooks',methods=["GET","POST"])
