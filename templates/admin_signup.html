@@ -1,6 +1,6 @@
 {%extends "parent.html"%}
 
-{%block content%} Admin Sign-up {%enblock%}
+{%block content%} Admin Sign-up {%endblock%}
 
 {%block data%}
          {%with messages = get_flashed_messages()%}
@@ -9,7 +9,7 @@
                 <p>{{msg}}</p>
               {%endfor%}
             {%endif%}
-        {%endwith%}
+         {%endwith%}
       <form action="#" method="POST">
         <p>Admin Name:</p>
         <input type="text" name="a_name"  required>
