@@ -137,6 +137,7 @@ def admin_signup():
                 return redirect(url_for('admin_signup'))
     return render_template('admin_signup.html')
 
+admin_login = False
 @app.route('/admin',methods=["GET","POST"])
 def admin_login():
     if request.method == "POST":
@@ -145,6 +146,7 @@ def admin_login():
         if chkadminlogin(a_id, a_password):
             session["admin_id"] = a_id
             session["admin_password"] = a_password
+            admin_login = True
             flash(" Welcome Admin !")
             return redirect(url_for("user"))
         else:
@@ -224,6 +226,10 @@ def logout():
     '''deleting the sessions that was created at the time of login'''
     session.pop("user", None)
     session.pop("mail", None)
+    session.pop("admin_id", None)
+    session.pop("admin_password", None)
+
+    admin_login = False
     return redirect(url_for("login"))
 
 
@@ -277,27 +283,32 @@ def admin_book_chk(book_id,book_name):
 
 @app.route('/addbooks',methods=["GET","POST"])
 def add_books():
-    if request.method == "POST":
-        book_id = request.form["add_book_id"]
-        book_name = request.form["add_book_name"]
-        book_count = request.form["add_book_count"]
-        oldbook_count = admin_book_chk(book_id,book_name)
-        cursor = mysql.connection.cursor()
-        BI = 0
-        BR = 50
-        if oldbook_count !=0 :
-            flash("The Book already found in the Library ! upating the current books...")
-            oldbook_count = oldbook_count + int(book_count)
-            #the resultant oldbook_count is the new book count
+    if admin_login == True:
+        if request.method == "POST":
+            book_id = request.form["add_book_id"]
+            book_name = request.form["add_book_name"]
+            book_count = request.form["add_book_count"]
+            oldbook_count = admin_book_chk(book_id,book_name)
+            cursor = mysql.connection.cursor()
+            BI = 0
+            BR = 50
+            if oldbook_count !=0 :
+                flash("The Book already found in the Library ! upating the current books...")
+                oldbook_count = oldbook_count + int(book_count)
+                #the resultant oldbook_count is the new book count
 
-            cursor.execute("UPDATE adminbooks_inventory SET  TotalBookCount=%s WHERE BookID=%s ",(oldbook_count,  int(book_id) ))
-            mysql.connection.commit()
-            cursor.close()
-        else:
-            flash("The Book is not found in the library...adding new books...")
-            cursor.execute("INSERT INTO adminbooks_inventory(BookID, BookName, TotalBookCount, TotalBooksIssued , TotalBooksRegistered ) VALUES(%s,%s,%s,%s,%s)",( int(book_id), book_name, int(book_count), int(BI), int(BR) ))
-            mysql.connection.commit()
-            cursor.close()
+                cursor.execute("UPDATE adminbooks_inventory SET  TotalBookCount=%s WHERE BookID=%s ",(oldbook_count,  int(book_id) ))
+                mysql.connection.commit()
+                cursor.close()
+            else:
+                flash("The Book is not found in the library...adding new books...")
+                cursor.execute("INSERT INTO adminbooks_inventory(BookID, BookName, TotalBookCount, TotalBooksIssued , TotalBooksRegistered ) VALUES(%s,%s,%s,%s,%s)",( int(book_id), book_name, int(book_count), int(BI), int(BR) ))
+                mysql.connection.commit()
+                cursor.close()
+    else:
+        flash("You have not logged in as a Admin !")
+        flash("cannot perform operation !! Error")
+        return redirect(url_for('admin_login'))
 
 
     return  render_template('addbooks.html')
