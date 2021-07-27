@@ -1,11 +1,14 @@
 from flask import Flask, render_template, url_for, redirect, request, session, flash
 from flask_mysqldb import MySQL
 from sensitiveinfo import *
-from random import randint, random, randrange
+from random import randint
+from datetime import timedelta
+
 ''' tutorial on sql alchemy - adding,deleting and updating users'''
 
 
 app = Flask(__name__)
+app.permanent_session_lifetime = timedelta(minutes=2)
 #MySql configuration
 app.config["MYSQL_HOST"] = mysql_host
 app.config["MYSQL_USER"] = mysql_user
@@ -144,6 +147,7 @@ def admin_login():
         a_id = request.form["a_id"]
         a_password = request.form["a_password"]
         if chkadminlogin(a_id, a_password):
+            session.permanent = True
             session["admin_id"] = a_id
             session["admin_password"] = a_password
             admin_login = True
@@ -283,7 +287,8 @@ def admin_book_chk(book_id,book_name):
 
 @app.route('/addbooks',methods=["GET","POST"])
 def add_books():
-    if admin_login == True:
+    #only admins can do this operation
+    if "admin_id" in session:
         if request.method == "POST":
             book_id = request.form["add_book_id"]
             book_name = request.form["add_book_name"]
@@ -316,34 +321,40 @@ def add_books():
 
 @app.route('/removebooks',methods=["GET","POST"])
 def remove_books():
-    if request.method == "POST":
-        book_id = request.form["remove_book_id"]
-        book_name = request.form["remove_book_name"]
-        book_count = request.form["remove_book_count"]
-        oldbook_count = admin_book_chk(book_id,book_name)
-        cursor = mysql.connection.cursor()
-        BI = 0
-        BR = 50
-        if oldbook_count !=0 :
-            flash("The Book already found in the Library ! upating the current books...")
-            if oldbook_count > int(book_count):
-                if (oldbook_count - int(book_count)) <= 0:
-                    flash("Book count is so higher than available books !")
+    if "admin_id" in session:
+        if request.method == "POST":
+            book_id = request.form["remove_book_id"]
+            book_name = request.form["remove_book_name"]
+            book_count = request.form["remove_book_count"]
+            oldbook_count = admin_book_chk(book_id,book_name)
+            cursor = mysql.connection.cursor()
+            BI = 0
+            BR = 50
+            if oldbook_count !=0 :
+                flash("The Book already found in the Library ! upating the current books...")
+                if oldbook_count > int(book_count):
+                    if (oldbook_count - int(book_count)) <= 0:
+                        flash("Book count is so higher than available books !")
+                    else:
+                        oldbook_count = oldbook_count - int(book_count)
                 else:
-                    oldbook_count = oldbook_count - int(book_count)
+                    if (int(book_count) - oldbook_count)<=0:
+                        flash("Book count is so higher than available books !")
+                    else:
+                        oldbook_count = int(book_count) - oldbook_count
+
+                #the resultant oldbook_count is the new book count
+
+                cursor.execute("UPDATE adminbooks_inventory SET TotalBookCount=%s WHERE BookID=%s ",(  oldbook_count, int(book_id) ))
+                mysql.connection.commit()
+                cursor.close()
             else:
-                if (int(book_count) - oldbook_count)<=0:
-                    flash("Book count is so higher than available books !")
-                else:
-                    oldbook_count = int(book_count) - oldbook_count
+                flash("The Book is not found in the library...Please add the Book first !!")
 
-            #the resultant oldbook_count is the new book count
-
-            cursor.execute("UPDATE adminbooks_inventory SET TotalBookCount=%s WHERE BookID=%s ",(  oldbook_count, int(book_id) ))
-            mysql.connection.commit()
-            cursor.close()
-        else:
-            flash("The Book is not found in the library...Please add the Book first !!")
+    else:
+        flash("You have not logged in as a Admin !")
+        flash("cannot perform operation !! Error")
+        return redirect(url_for('admin_login'))
 
     return  render_template('removebooks.html')
 

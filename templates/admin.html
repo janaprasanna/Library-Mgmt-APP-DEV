@@ -1,15 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>Admin Login page</title>
-</head>
-<body>
-     <form action="#" method="POST">
-   <p>Admin ID:</p>
+{%extends "parent.html"%}
+
+{%block content%}Admin Login page{%endblock%}
+
+{%block data%}
+    {%with messages = get_flashed_messages()%}
+        {%if messages%}
+            {%for msg in messages%}
+                <p>{{msg}}</p>
+            {%endfor%}
+        {%endif%}
+    {%endwith%}
+    <form action="#" method="POST">
+    <p>Admin ID:</p>
     <input type="text" name="a_id" minlength="4" required>
     <p>Password:</p>
     <input type="password" id="pwd" name="a_password" minlength="4" maxlength="10s" required>
     <input type="submit" value="Login">
   </form>
-</body>
-</html>
+
+{%endblock%}
