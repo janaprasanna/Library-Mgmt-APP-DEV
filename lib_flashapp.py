@@ -261,30 +261,79 @@ def borrow():
 def admin_book_chk(book_id,book_name):
     cursor = mysql.connection.cursor()
     cursor.execute("select BookID,BookName,TotalBookCount from adminbooks_inventory where BookID=%s AND BookName=%s",(book_id,book_name))
-    result = cursor.fetchone()
-    return result[2]
+    result = cursor.fetchone()  #returns a tuple
+    if result == None:
+        result = 0
+        return result
+    else:
+        result2 = result[2]
+        return result2
+''' 
+    print(result[2])
+    print(type(result[2]))
+    print(type(result)) '''
+
 
 
 @app.route('/addbooks',methods=["GET","POST"])
 def add_books():
-    book_id = request.form["add_book_id"]
-    book_name = request.form["add_book_name"]
-    book_count = request.form["add_book_count"]
-    oldbook_count = admin_book_chk(book_id,book_name)
-    if oldbook_count !=0 :
-        flash("The Book already found in the Library ! upating the current books...")
-        if oldbook_count > book_count:
-            oldbook_count = oldbook_count + ()
+    if request.method == "POST":
+        book_id = request.form["add_book_id"]
+        book_name = request.form["add_book_name"]
+        book_count = request.form["add_book_count"]
+        oldbook_count = admin_book_chk(book_id,book_name)
+        cursor = mysql.connection.cursor()
+        BI = 0
+        BR = 50
+        if oldbook_count !=0 :
+            flash("The Book already found in the Library ! upating the current books...")
+            oldbook_count = oldbook_count + int(book_count)
+            #the resultant oldbook_count is the new book count
+
+            cursor.execute("UPDATE adminbooks_inventory SET  TotalBookCount=%s WHERE BookID=%s ",(oldbook_count,  int(book_id) ))
+            mysql.connection.commit()
+            cursor.close()
         else:
-            oldbook_count = book_count - oldbook_count
-    else:
-        flash("The Book is not found in the library...adding new books...")
+            flash("The Book is not found in the library...adding new books...")
+            cursor.execute("INSERT INTO adminbooks_inventory(BookID, BookName, TotalBookCount, TotalBooksIssued , TotalBooksRegistered ) VALUES(%s,%s,%s,%s,%s)",( int(book_id), book_name, int(book_count), int(BI), int(BR) ))
+            mysql.connection.commit()
+            cursor.close()
+
 
     return  render_template('addbooks.html')
 
 
 @app.route('/removebooks',methods=["GET","POST"])
 def remove_books():
+    if request.method == "POST":
+        book_id = request.form["remove_book_id"]
+        book_name = request.form["remove_book_name"]
+        book_count = request.form["remove_book_count"]
+        oldbook_count = admin_book_chk(book_id,book_name)
+        cursor = mysql.connection.cursor()
+        BI = 0
+        BR = 50
+        if oldbook_count !=0 :
+            flash("The Book already found in the Library ! upating the current books...")
+            if oldbook_count > int(book_count):
+                if (oldbook_count - int(book_count)) <= 0:
+                    flash("Book count is so higher than available books !")
+                else:
+                    oldbook_count = oldbook_count - int(book_count)
+            else:
+                if (int(book_count) - oldbook_count)<=0:
+                    flash("Book count is so higher than available books !")
+                else:
+                    oldbook_count = int(book_count) - oldbook_count
+
+            #the resultant oldbook_count is the new book count
+
+            cursor.execute("UPDATE adminbooks_inventory SET TotalBookCount=%s WHERE BookID=%s ",(  oldbook_count, int(book_id) ))
+            mysql.connection.commit()
+            cursor.close()
+        else:
+            flash("The Book is not found in the library...Please add the Book first !!")
+
     return  render_template('removebooks.html')
 
 @app.route('/issuebooks',methods=["GET","POST"])

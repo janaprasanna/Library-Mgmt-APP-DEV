@@ -87,14 +87,6 @@ def login():
     return render_template('login.html')
 
 
-
-
-
-
-
-
-
-
 @app.route('/logout')
 def logout():
     flash("you have been logged out!", "info")
@@ -104,6 +96,36 @@ def logout():
     return redirect(url_for("login"))
 
 
+
+def admin_book_chk(book_id,book_name):
+    cursor = mysql.connection.cursor()
+    cursor.execute("select BookID,BookName,TotalBookCount from adminbooks_inventory where BookID=%s AND BookName=%s",(int(book_id),book_name))
+    result = cursor.fetchone()
+    print(result)
+    if result == None:
+        result = 0
+
+    #print(result[2])
+    return result
+
+
+@app.route('/addbooks',methods=["GET","POST"])
+def add_books():
+    if request.method == "POST":
+        book_id = request.form["add_book_id"]
+        book_name = request.form["add_book_name"]
+        book_count = request.form["add_book_count"]
+        oldbook_count = admin_book_chk(book_id,book_name)
+        if oldbook_count !=0 :
+            flash("The Book already found in the Library ! upating the current books...")
+            if oldbook_count > book_count:
+                oldbook_count = oldbook_count + ()
+            else:
+                oldbook_count = book_count - oldbook_count
+        else:
+            flash("The Book is not found in the library...adding new books...")
+
+    return  render_template('addbooks.html')
 
 
 
