@@ -1,0 +1,33 @@
+{%extends "parent.html"%}
+
+{%block head%}
+  <style>
+    table, th, td {
+      border: 1px solid black;
+    }
+  </style>
+{%endblock%}
+
+{%block content%} Books Inventory {%endblock%}
+
+{%block data%}
+    <table>
+      <tr>
+        <th>Book ID</th>
+        <th>Student ID</th>
+        <th>No. Of Books Requested</th>
+        <th>Approve</th>
+        <th>Deny</th>
+      </tr>
+        {%for request in requests:%}
+            <tr>
+                  <td>{{request[0]}}</td>
+                  <td>{{request[1]}}</td>
+                  <td>{{request[2]}}</td>
+                  <td><button type="button" class="btn btn-success">Approve</button></td>
+                  <td><button type="button" class="btn btn-danger">Deny</button></td>
+            </tr>
+        {%endfor%}
+
+    </table>
+{%endblock%}

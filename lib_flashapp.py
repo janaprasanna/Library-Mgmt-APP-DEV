@@ -260,15 +260,25 @@ def dashboard():
 
 @app.route('/booksdashboard')
 def admindashboard():
-    cursor = mysql.connection.cursor()
-    result = cursor.execute("SELECT * FROM adminbooks_inventory")
-    if result > 0:
-        bookdetails = cursor.fetchall()
+    if "admin_id" in session:
+        cursor = mysql.connection.cursor()
+        result = cursor.execute("SELECT * FROM adminbooks_inventory")
+        if result > 0:
+            bookdetails = cursor.fetchall()
     return render_template('books_inventory.html',books=bookdetails)
 
 
 @app.route('/borrowbooks',methods=["GET","POST"])
 def borrow():
+    if request.method == "POST":
+        student_id = request.form["student_id"]
+        book_id = request.form["book_id"]
+        book_count = request.form["book_count"]
+        cursor = mysql.connection.cursor()
+        cursor.execute("INSERT INTO borrow_books(book_id,student_id,Book_Count) VALUES(%s,%s,%s);",(int(book_id),int(student_id), int(book_count)))
+        mysql.connection.commit()
+        cursor.close()
+        flash("your request has been sent to the Admin. Please wait for the Approval.")
     return render_template('borrow_books.html')
 
 
@@ -282,11 +292,6 @@ def admin_book_chk(book_id,book_name):
     else:
         result2 = result[2]
         return result2
-''' 
-    print(result[2])
-    print(type(result[2]))
-    print(type(result)) '''
-
 
 
 @app.route('/addbooks',methods=["GET","POST"])
@@ -362,8 +367,29 @@ def remove_books():
 
     return  render_template('removebooks.html')
 
+@app.route('/viewrequests')
+def borrowrequest():
+    if "admin_id" in session:
+        cursor = mysql.connection.cursor()
+        result = cursor.execute("SELECT * FROM borrow_books;")
+        if result > 0:
+            bookdetails = cursor.fetchall()
+            return render_template('bookrequests.html',requests=bookdetails)
+    else:
+        return "<h3>Your are not allowed to do this operation !!</h3>"
+
 @app.route('/issuebooks',methods=["GET","POST"])
 def issue_approval():
+    if request.method == "POST":
+        student_id = request.form["student_id"]
+        book_id = request.form["book_id"]
+        book_name = request.form["book_name"]
+        book_count = request.form["book_count"]
+        if "admin_id" in session:
+            return render_template('issuebooks.html')
+        else:
+            flash("your request was sent !")
+            return redirect(url_for("issue_approval"))
     return render_template('issuebooks.html')
 
 if __name__== "__main__":
