@@ -11,6 +11,7 @@
 {%block content%} Books Inventory {%endblock%}
 
 {%block data%}
+    <form method="POST" id="form_approve" action="#"></form>
     <table>
       <tr>
         <th>Book ID</th>
@@ -18,14 +19,15 @@
         <th>No. Of Books Requested</th>
         <th>Approve</th>
         <th>Deny</th>
+
       </tr>
         {%for request in requests:%}
             <tr>
-                  <td>{{request[0]}}</td>
-                  <td>{{request[1]}}</td>
-                  <td>{{request[2]}}</td>
-                  <td><button type="button" class="btn btn-success">Approve</button></td>
-                  <td><button type="button" class="btn btn-danger">Deny</button></td>
+                <td>{{request[0]}}</td>
+                <td>{{request[1]}}</td>
+                <td>{{request[2]}}</td>
+                <td><button type="submit" class="btn btn-success" form="form_approve" name="approve" value="yes">Approve</button></td>
+                <td><button type="submit" class="btn btn-danger" form="form_approve" name="deny" value="no" >Deny</button></td>
             </tr>
         {%endfor%}
 

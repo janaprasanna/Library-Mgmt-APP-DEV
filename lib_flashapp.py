@@ -282,6 +282,36 @@ def borrow():
     return render_template('borrow_books.html')
 
 
+
+@app.route('/viewrequests',methods=["GET","POST"])
+def borrowrequest():
+    if "admin_id" in session:
+        cursor = mysql.connection.cursor()
+        result = cursor.execute("SELECT * FROM borrow_books;")
+        if result > 0:
+            bookdetails = cursor.fetchall()
+        cursor.close()
+
+        if request.method == "POST":
+            if request.form.get("approve") == 'yes':
+                print("Status approved")
+                return redirect(url_for('issue_approval'))
+            elif request.form.get("deny") == 'no':
+                #delete the request from viewrequest
+                print("status denied")
+            else:
+                print("Status pending...")
+    else:
+        return "<h3>Your are not allowed to do this operation !!</h3>"
+
+    return render_template('bookrequests.html', requests=bookdetails)
+
+@app.route('/approverequests/<>',methods=["GET","POST"])
+def approve():
+    return render_template('approverequest.html')
+
+
+
 def admin_book_chk(book_id,book_name):
     cursor = mysql.connection.cursor()
     cursor.execute("select BookID,BookName,TotalBookCount from adminbooks_inventory where BookID=%s AND BookName=%s",(book_id,book_name))
@@ -367,29 +397,23 @@ def remove_books():
 
     return  render_template('removebooks.html')
 
-@app.route('/viewrequests')
-def borrowrequest():
-    if "admin_id" in session:
-        cursor = mysql.connection.cursor()
-        result = cursor.execute("SELECT * FROM borrow_books;")
-        if result > 0:
-            bookdetails = cursor.fetchall()
-            return render_template('bookrequests.html',requests=bookdetails)
-    else:
-        return "<h3>Your are not allowed to do this operation !!</h3>"
+
 
 @app.route('/issuebooks',methods=["GET","POST"])
 def issue_approval():
-    if request.method == "POST":
-        student_id = request.form["student_id"]
-        book_id = request.form["book_id"]
-        book_name = request.form["book_name"]
-        book_count = request.form["book_count"]
-        if "admin_id" in session:
-            return render_template('issuebooks.html')
-        else:
-            flash("your request was sent !")
+    if "admin_id" in session:
+        if request.method == "POST":
+            student_id = request.form["student_id"]
+            book_id = request.form["book_id"]
+            token_left = request.form["a_token_left"]
+            book_count = request.form["book_count"]
+            issue_date = request.form["a_i_date"]
+            return_date = request.form["a_r_date"]
+            #use triggers to update student dashboard , admin dashboard, bookrequests
+            flash("Approval Accepted !")
             return redirect(url_for("issue_approval"))
+    else:
+        return "<h3>You cannot perfom this action !</h3>"
     return render_template('issuebooks.html')
 
 if __name__== "__main__":
