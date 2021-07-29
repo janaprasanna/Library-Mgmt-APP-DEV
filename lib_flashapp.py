@@ -306,11 +306,6 @@ def borrowrequest():
 
     return render_template('bookrequests.html', requests=bookdetails)
 
-@app.route('/approverequests/<>',methods=["GET","POST"])
-def approve():
-    return render_template('approverequest.html')
-
-
 
 def admin_book_chk(book_id,book_name):
     cursor = mysql.connection.cursor()
