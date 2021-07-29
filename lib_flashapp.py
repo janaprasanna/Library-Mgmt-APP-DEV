@@ -290,6 +290,8 @@ def borrowrequest():
         result = cursor.execute("SELECT * FROM borrow_books;")
         if result > 0:
             bookdetails = cursor.fetchall()
+        else:
+            bookdetails = None
         cursor.close()
 
         if request.method == "POST":
@@ -304,7 +306,7 @@ def borrowrequest():
     else:
         return "<h3>Your are not allowed to do this operation !!</h3>"
 
-    return render_template('bookrequests.html', requests=bookdetails)
+    return render_template('bookrequests.html',requests=bookdetails)
 
 
 def admin_book_chk(book_id,book_name):
@@ -393,17 +395,27 @@ def remove_books():
     return  render_template('removebooks.html')
 
 
-
+#only used when approve button is pressed
 @app.route('/issuebooks',methods=["GET","POST"])
 def issue_approval():
     if "admin_id" in session:
         if request.method == "POST":
             student_id = request.form["a_student_id"]
             book_id = request.form["a_book_id"]
+            cursor = mysql.connection.cursor()
+            cursor.execute("DELETE FROM borrow_books WHERE book_id = %s",(int(book_id),))
+            mysql.connection.commit()
+            cursor.close()
+
             token_left = request.form["a_token_left"]
             book_count = request.form["book_count"]
             issue_date = request.form["a_i_date"]
             return_date = request.form["a_r_date"]
+            cursor = mysql.connection.cursor()
+            cursor.execute("INSERT INTO issue_books(student_id,book_id,issue_date,return_date,book_count,Tokens_left) VALUES(%s,%s,%s,%s,%s,%s)",(int(student_id),int(book_id),issue_date,return_date,int(book_count),int(token_left)))
+            #cursor.execute("DELETE FROM borrow_books WHERE student_id=%s",(int(student_id)))
+            mysql.connection.commit()
+            cursor.close()
             #use triggers to update student dashboard , admin dashboard, bookrequests
             flash("Approval Accepted !")
             return redirect(url_for("borrowrequest"))
