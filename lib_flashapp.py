@@ -398,15 +398,15 @@ def remove_books():
 def issue_approval():
     if "admin_id" in session:
         if request.method == "POST":
-            student_id = request.form["student_id"]
-            book_id = request.form["book_id"]
+            student_id = request.form["a_student_id"]
+            book_id = request.form["a_book_id"]
             token_left = request.form["a_token_left"]
             book_count = request.form["book_count"]
             issue_date = request.form["a_i_date"]
             return_date = request.form["a_r_date"]
             #use triggers to update student dashboard , admin dashboard, bookrequests
             flash("Approval Accepted !")
-            return redirect(url_for("issue_approval"))
+            return redirect(url_for("borrowrequest"))
     else:
         return "<h3>You cannot perfom this action !</h3>"
     return render_template('issuebooks.html')
