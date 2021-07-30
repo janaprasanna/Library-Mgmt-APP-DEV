@@ -287,8 +287,9 @@ def admindashboard():
 def studentfound(sid):
     cursor = mysql.connection.cursor()
     found = cursor.execute("SELECT id FROM users WHERE id=%s",[sid])
-    if found>0 && found == sid:
-        return True
+    if found>0:
+        if found == sid:
+            return True
     else:
         return False
 
