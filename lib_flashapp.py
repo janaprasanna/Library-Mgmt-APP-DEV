@@ -284,21 +284,32 @@ def admindashboard():
 
     return render_template('books_inventory.html')
 
-
+def studentfound(sid):
+    cursor = mysql.connection.cursor()
+    found = cursor.execute("SELECT id FROM users WHERE id=%s",[sid])
+    if found>0 && found == sid:
+        return True
+    else:
+        return False
 
 @app.route('/borrowbooks',methods=["GET","POST"])
 def borrow():
     valid = tokenstatus()
     if request.method == "POST":
         if valid:
-            student_id = request.form["student_id"]
-            book_id = request.form["book_id"]
-            book_count = request.form["book_count"]
             cursor = mysql.connection.cursor()
-            cursor.execute("INSERT INTO borrow_books(book_id,student_id,Book_Count) VALUES(%s,%s,%s);",(int(book_id),int(student_id), int(book_count)))
-            mysql.connection.commit()
-            cursor.close()
-            flash("your request has been sent to the Admin. Please wait for the Approval.")
+            student_id = request.form["student_id"]
+            student_valid = studentfound(student_id)
+            if student_valid: #checking if the student id is present in the db
+                book_id = request.form["book_id"]
+                book_count = request.form["book_count"]
+                cursor = mysql.connection.cursor()
+                cursor.execute("INSERT INTO borrow_books(book_id,student_id,Book_Count) VALUES(%s,%s,%s);",(int(book_id),int(student_id), int(book_count)))
+                mysql.connection.commit()
+                cursor.close()
+                flash("your request has been sent to the Admin. Please wait for the Approval.")
+            else:
+                return "<h3>The student hasn't registered to our Library!! Contact Admin.</h3>"
         else:
             flash("You are out of tokens!! Please return the existing books in order to gain tokens !")
     return render_template('borrow_books.html')
