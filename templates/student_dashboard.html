@@ -10,18 +10,29 @@
 {%block content%} Your Dashboard {%endblock%}
 
 {%block data%}
-    <table>
-      <tr>
-        <th>Book ID</th>
-        <th>Book Name</th>
-        <th>No. of Books Borrowed</th>
-        <th>Return Date</th>
-      </tr>
-      <tr>
-        <td>100</td>
-        <td>Tin Tin</td>
-          <td>4</td>
-          <td>2nd August 2022</td>
-      </tr>
-    </table>
+  {%if db%}
+      <table>
+        <tr>
+          <th>Book ID</th>
+          <th>Book Name</th>
+          <th>No. of Books Borrowed</th>
+          <th>Return Date</th>
+          <th>Total Tokens</th>
+          <th>Tokens Left</th>
+        </tr>
+          {%for row in db%}
+              <tr>
+                  <td>{{row[0]}}</td>
+                  <td>{{row[1]}}</td>
+                  <td>{{row[2]}}</td>
+                  <td>{{row[3]}}</td>
+                  <td>{{row[4]}}</td>
+                  <td>{{row[5]}}</td>
+              </tr>
+          {%endfor%}
+      </table>
+  {%else%}
+    <p>No Books Issued so far !</p>
+  {%endif%}
+
 {%endblock%}

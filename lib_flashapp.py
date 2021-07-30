@@ -205,6 +205,7 @@ def login():
         login_mail = request.form["l_mail"]
         login_passwd = request.form["l_passwd"]
         if chklogin(login_mail,login_passwd):
+            session["user"] = login_mail
             flash("Login successful ! Welcome back....")
             return  redirect(url_for("user"))
         else:
@@ -256,7 +257,14 @@ def rem_ac():
 
 @app.route('/mydashboard')
 def dashboard():
-    return render_template('student_dashboard.html')
+    if "user" in session:
+        cursor = mysql.connection.cursor()
+        result = cursor.execute("SELECT * FROM studentbooks_inventory")
+        if result > 0:
+            student_db = cursor.fetchall()
+        return render_template('student_dashboard.html',db=student_db)
+    else:
+        return "<h3>You are not logged in !</h3>"
 
 @app.route('/booksdashboard')
 def admindashboard():
@@ -265,7 +273,15 @@ def admindashboard():
         result = cursor.execute("SELECT * FROM adminbooks_inventory")
         if result > 0:
             bookdetails = cursor.fetchall()
-    return render_template('books_inventory.html',books=bookdetails)
+        else:
+            bookdetails=None
+        cursor.close()
+        return render_template('books_inventory.html', books=bookdetails)
+    else:
+        return "<h3>You are not logged in as Admin.</h3>"
+
+    return render_template('books_inventory.html')
+
 
 
 @app.route('/borrowbooks',methods=["GET","POST"])
@@ -406,11 +422,17 @@ def issue_approval():
             cursor.execute("DELETE FROM borrow_books WHERE book_id = %s",(int(book_id),))
             mysql.connection.commit()
             cursor.close()
-
             token_left = request.form["a_token_left"]
             book_count = request.form["book_count"]
             issue_date = request.form["a_i_date"]
             return_date = request.form["a_r_date"]
+
+            # update in student dashboard table also
+            cursor = mysql.connection.cursor()
+            cursor.execute("INSERT INTO studentbooks_inventory(BookID,BookName,TotalBooksBorrowed,ReturnDate,Total_tokens,Available_Tokens) VALUES(%s,%s,%s,%s,%s,%s)",( int(book_id),"",int(book_count),return_date,5,int(token_left) ))
+            mysql.connection.commit()
+            cursor.close()
+
             cursor = mysql.connection.cursor()
             cursor.execute("INSERT INTO issue_books(student_id,book_id,issue_date,return_date,book_count,Tokens_left) VALUES(%s,%s,%s,%s,%s,%s)",(int(student_id),int(book_id),issue_date,return_date,int(book_count),int(token_left)))
             #cursor.execute("DELETE FROM borrow_books WHERE student_id=%s",(int(student_id)))
