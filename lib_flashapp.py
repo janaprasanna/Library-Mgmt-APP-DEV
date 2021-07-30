@@ -255,6 +255,7 @@ def rem_ac():
     return render_template('delete_ac.html')
 
 
+#only for student view
 @app.route('/mydashboard')
 def dashboard():
     if "user" in session:
@@ -266,6 +267,7 @@ def dashboard():
     else:
         return "<h3>You are not logged in !</h3>"
 
+#only for admin view
 @app.route('/booksdashboard')
 def admindashboard():
     if "admin_id" in session:
@@ -411,7 +413,20 @@ def remove_books():
     return  render_template('removebooks.html')
 
 
-#only used when approve button is pressed
+def update_admin_dashboard(bookid):
+    cursor1 = mysql.connection.cursor()
+    cursor2 = mysql.connection.cursor()
+    result1 = cursor1.execute("select BookID, TotalBookCount,TotalBooksIssued from adminbooks_inventory where BookID=%s",(int(bookid)))
+    result2 = cursor2.execute("select book_id, book_count from issue_books where book_id=%s",(int(bookid)))
+    newbookcount = result1[1] - result2[1]
+    cursor1.execute("UPDATE adminbooks_inventory SET  TotalBooksIssued=%s WHERE BookID=%s",(newbookcount,bookid))
+    cursor1.close()
+    cursor2.close()
+    return None
+
+def update_student_dashboard(studentid):
+
+#only used when approve button is pressed (admin view)
 @app.route('/issuebooks',methods=["GET","POST"])
 def issue_approval():
     if "admin_id" in session:
@@ -430,11 +445,13 @@ def issue_approval():
             # update in student dashboard table also
             cursor = mysql.connection.cursor()
             cursor.execute("INSERT INTO studentbooks_inventory(BookID,BookName,TotalBooksBorrowed,ReturnDate,Total_tokens,Available_Tokens) VALUES(%s,%s,%s,%s,%s,%s)",( int(book_id),"",int(book_count),return_date,5,int(token_left) ))
+            update_student_dashboard(student_id)
             mysql.connection.commit()
             cursor.close()
 
             cursor = mysql.connection.cursor()
             cursor.execute("INSERT INTO issue_books(student_id,book_id,issue_date,return_date,book_count,Tokens_left) VALUES(%s,%s,%s,%s,%s,%s)",(int(student_id),int(book_id),issue_date,return_date,int(book_count),int(token_left)))
+            update_admin_dashboard(book_id)
             #cursor.execute("DELETE FROM borrow_books WHERE student_id=%s",(int(student_id)))
             mysql.connection.commit()
             cursor.close()
