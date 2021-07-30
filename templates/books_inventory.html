@@ -24,7 +24,6 @@
             <th>Book ID</th>
             <th>Book Name</th>
               <th>No. of Books In Library</th>
-            <th>No. of Books Registered In Library</th>
             <th>No. of Books Issued</th>
           </tr>
             {%for book in books:%}
@@ -33,7 +32,7 @@
                       <td>{{book[1]}}</td>
                       <td>{{book[2]}}</td>
                       <td>{{book[3]}}</td>
-                      <td>{{book[4]}}</td>
+
                 </tr>
             {%endfor%}
 

@@ -101,7 +101,7 @@ def tokenstatus():
         temp_token = temp_token + 1
 
 
-    if token_left <= 5:
+    if token_left >=1:
         return True
     else:
         return False
@@ -288,15 +288,19 @@ def admindashboard():
 
 @app.route('/borrowbooks',methods=["GET","POST"])
 def borrow():
+    valid = tokenstatus()
     if request.method == "POST":
-        student_id = request.form["student_id"]
-        book_id = request.form["book_id"]
-        book_count = request.form["book_count"]
-        cursor = mysql.connection.cursor()
-        cursor.execute("INSERT INTO borrow_books(book_id,student_id,Book_Count) VALUES(%s,%s,%s);",(int(book_id),int(student_id), int(book_count)))
-        mysql.connection.commit()
-        cursor.close()
-        flash("your request has been sent to the Admin. Please wait for the Approval.")
+        if valid:
+            student_id = request.form["student_id"]
+            book_id = request.form["book_id"]
+            book_count = request.form["book_count"]
+            cursor = mysql.connection.cursor()
+            cursor.execute("INSERT INTO borrow_books(book_id,student_id,Book_Count) VALUES(%s,%s,%s);",(int(book_id),int(student_id), int(book_count)))
+            mysql.connection.commit()
+            cursor.close()
+            flash("your request has been sent to the Admin. Please wait for the Approval.")
+        else:
+            flash("You are out of tokens!! Please return the existing books in order to gain tokens !")
     return render_template('borrow_books.html')
 
 
@@ -317,6 +321,8 @@ def borrowrequest():
                 print("Status approved")
                 return redirect(url_for('issue_approval'))
             elif request.form.get("deny") == 'no':
+                return  redirect(url_for('issue_deny'))
+                cursor.execute("DELETE FROM borrow_books WHERE student_id=%s ")
                 #delete the request from viewrequest
                 print("status denied")
             else:
@@ -361,7 +367,7 @@ def add_books():
                 cursor.close()
             else:
                 flash("The Book is not found in the library...adding new books...")
-                cursor.execute("INSERT INTO adminbooks_inventory(BookID, BookName, TotalBookCount, TotalBooksIssued , TotalBooksRegistered ) VALUES(%s,%s,%s,%s,%s)",( int(book_id), book_name, int(book_count), int(BI), int(BR) ))
+                cursor.execute("INSERT INTO adminbooks_inventory(BookID, BookName, TotalBookCount, TotalBooksIssued  ) VALUES(%s,%s,%s,%s)",( int(book_id), book_name, int(book_count), int(BI) ))
                 mysql.connection.commit()
                 cursor.close()
     else:
@@ -416,15 +422,45 @@ def remove_books():
 def update_admin_dashboard(bookid):
     cursor1 = mysql.connection.cursor()
     cursor2 = mysql.connection.cursor()
-    result1 = cursor1.execute("select BookID, TotalBookCount,TotalBooksIssued from adminbooks_inventory where BookID=%s",(int(bookid)))
-    result2 = cursor2.execute("select book_id, book_count from issue_books where book_id=%s",(int(bookid)))
-    newbookcount = result1[1] - result2[1]
+    cursor1.execute("select BookID, TotalBookCount from adminbooks_inventory where BookID=%s",[bookid])
+    result1 = cursor1.fetchone()
+    cursor2.execute("select book_id,  book_count, Tokens_left from issue_books where book_id=%s",[bookid])
+    result2 = cursor2.fetchone()
+    newbookcount = result2[1]
+    cursor2.close()
     cursor1.execute("UPDATE adminbooks_inventory SET  TotalBooksIssued=%s WHERE BookID=%s",(newbookcount,bookid))
+    mysql.connection.commit()
     cursor1.close()
+    return None
+
+def update_student_dashboard(bookid):
+    cursor1 = mysql.connection.cursor()
+    cursor2 = mysql.connection.cursor()
+    cursor1.execute("SELECT book_id, Tokens_left FROM issue_books WHERE book_id=%s",[bookid])
+    result1 = cursor1.fetchone()
+    cursor2.execute("select BookID,Total_tokens,Available_Tokens FROM studentbooks_inventory WHERE BookID=%s",[bookid])
+    result2 = cursor2.fetchone()
+    print("result1:",result1)
+    print("result2:",result2)
+    #newtokens = Total tokens - Tokens consumed
+    newtokens_left = result2[1] - result1[1]
+    cursor1.close()
+    cursor2.execute("UPDATE studentbooks_inventory SET Available_Tokens=%s WHERE BookID=%s",(newtokens_left,bookid))
+    mysql.connection.commit()
     cursor2.close()
     return None
 
-def update_student_dashboard(studentid):
+@app.route('/denyrequest',methods=["GET","POST"])
+def issue_deny():
+    if request.method == "POST":
+        student_id = request.form["d_student_id"]
+        cursor = mysql.connection.cursor()
+        cursor.execute("DELETE FROM borrow_books WHERE student_id=%s",[student_id])
+        mysql.connection.commit()
+        cursor.close()
+        flash("Request successfully denied!")
+        return redirect(url_for('borrowrequest'))
+    return render_template('denybooks.html')
 
 #only used when approve button is pressed (admin view)
 @app.route('/issuebooks',methods=["GET","POST"])
@@ -433,34 +469,46 @@ def issue_approval():
         if request.method == "POST":
             student_id = request.form["a_student_id"]
             book_id = request.form["a_book_id"]
-            cursor = mysql.connection.cursor()
-            cursor.execute("DELETE FROM borrow_books WHERE book_id = %s",(int(book_id),))
-            mysql.connection.commit()
-            cursor.close()
             token_left = request.form["a_token_left"]
             book_count = request.form["book_count"]
             issue_date = request.form["a_i_date"]
             return_date = request.form["a_r_date"]
 
-            # update in student dashboard table also
             cursor = mysql.connection.cursor()
-            cursor.execute("INSERT INTO studentbooks_inventory(BookID,BookName,TotalBooksBorrowed,ReturnDate,Total_tokens,Available_Tokens) VALUES(%s,%s,%s,%s,%s,%s)",( int(book_id),"",int(book_count),return_date,5,int(token_left) ))
-            update_student_dashboard(student_id)
+            cursor.execute(
+                "INSERT INTO issue_books(student_id,book_id,issue_date,return_date,book_count,Tokens_left) VALUES(%s,%s,%s,%s,%s,%s)",
+                (int(student_id), int(book_id), issue_date, return_date, int(book_count), int(token_left)))
+            update_admin_dashboard(book_id)
+            # cursor.execute("DELETE FROM borrow_books WHERE student_id=%s",(int(student_id)))
             mysql.connection.commit()
             cursor.close()
 
+            # update in student dashboard table also
             cursor = mysql.connection.cursor()
-            cursor.execute("INSERT INTO issue_books(student_id,book_id,issue_date,return_date,book_count,Tokens_left) VALUES(%s,%s,%s,%s,%s,%s)",(int(student_id),int(book_id),issue_date,return_date,int(book_count),int(token_left)))
-            update_admin_dashboard(book_id)
-            #cursor.execute("DELETE FROM borrow_books WHERE student_id=%s",(int(student_id)))
+            cursor.execute("INSERT INTO studentbooks_inventory(BookID,BookName,TotalBooksBorrowed,ReturnDate,Total_tokens,Available_Tokens) VALUES(%s,%s,%s,%s,%s,%s)",( int(book_id),"",int(book_count),return_date,5,int(token_left) ))
+            update_student_dashboard(book_id)
             mysql.connection.commit()
             cursor.close()
+
+
             #use triggers to update student dashboard , admin dashboard, bookrequests
+            cursor = mysql.connection.cursor()
+            cursor.execute("DELETE FROM borrow_books WHERE book_id = %s", (int(book_id),))
+            mysql.connection.commit()
+            cursor.close()
             flash("Approval Accepted !")
             return redirect(url_for("borrowrequest"))
     else:
         return "<h3>You cannot perfom this action !</h3>"
     return render_template('issuebooks.html')
+
+
+
+
+
+
+
+
 
 if __name__== "__main__":
     app.run(debug = True)
